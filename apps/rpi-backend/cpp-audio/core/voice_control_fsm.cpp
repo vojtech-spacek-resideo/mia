@@ -50,9 +50,10 @@ void VoiceControlFSM::process_event(const text_transcribed& event) {
 void VoiceControlFSM::process_event(const intent_parsed& event) {
     switch (state_) {
         case VoiceState::Processing:
-            // Action: execute command
-            // ctx_.on_command_execute(event.tool, event.args); // TODO: implement
-            // Stay in processing state
+            // Action: execute command via context callback
+            if (ctx_.on_command_execute) {
+                ctx_.on_command_execute(event.tool, event.args);
+            }
             std::cout << "FSM: Processing (intent parsed: " << event.tool << ")" << std::endl;
             break;
         default:

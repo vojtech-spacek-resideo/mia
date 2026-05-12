@@ -34,6 +34,42 @@ struct STTWorker::WhisperContext {
     }
 
     bool is_valid() const { return ctx != nullptr; }
+
+    // Native transcription via whisper.h API
+    std::string transcribe(const std::string& wav_path) {
+        if (!ctx) return "";
+
+        // Read WAV file into float samples (16kHz mono expected)
+        std::ifstream file(wav_path, std::ios::binary);
+        if (!file) return "";
+
+        // Skip WAV header (44 bytes)
+        file.seekg(44);
+        std::vector<int16_t> pcm16;
+        int16_t sample;
+        while (file.read(reinterpret_cast<char*>(&sample), sizeof(sample))) {
+            pcm16.push_back(sample);
+        }
+
+        // Convert to float [-1.0, 1.0]
+        std::vector<float> samples(pcm16.size());
+        for (size_t i = 0; i < pcm16.size(); ++i) {
+            samples[i] = static_cast<float>(pcm16[i]) / 32768.0f;
+        }
+
+        // Run whisper inference
+        int ret = whisper_full(ctx, nullptr, samples.data(), static_cast<int>(samples.size()));
+        if (ret != 0) return "";
+
+        // Collect transcription segments
+        std::string result;
+        int n_segments = whisper_full_n_segments(ctx);
+        for (int i = 0; i < n_segments; ++i) {
+            const char* text = whisper_full_get_segment_text(ctx, i);
+            if (text) result += text;
+        }
+        return result;
+    }
 };
 
 STTWorker::STTWorker() {
@@ -112,9 +148,11 @@ bool STTWorker::process_transcription(const STTRequest& request) {
 
     // Try native whisper processing first
     if (whisper_ctx_ && whisper_ctx_->is_valid()) {
-        // TODO: Implement native whisper processing
-        // For now, fall back to CLI method
-        transcription = run_whisper_cli(request.wav_path);
+        transcription = whisper_ctx_->transcribe(request.wav_path);
+        if (transcription.empty()) {
+            // Native processing returned empty, fall back to CLI
+            transcription = run_whisper_cli(request.wav_path);
+        }
     } else {
         // Fall back to CLI method
         transcription = run_whisper_cli(request.wav_path);
