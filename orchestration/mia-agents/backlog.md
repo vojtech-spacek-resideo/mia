@@ -11,12 +11,12 @@
 
 - [x] ~~**[TEST]** `arduino.py` needs simulation fallback for CI~~ — DONE 2026-05-12
 - [x] ~~**[TEST]** `gpio.py` (messaging client variant) needs graceful degradation when hardware server is unavailable~~ — DONE 2026-05-12
-- [ ] **[BUILD]** Android MCP bridge TODOs: DPF status, DPF regen, AdBlue, full diagnostics, DTC reading (5 stubs in MainActivity.kt) — source: TODO scan
-- [ ] **[BUILD]** C++ audio worker stubs: whisper STT, piper TTS integration, model loading (3 TODOs in cpp-audio/) — source: TODO scan
+- [x] ~~**[BUILD]** Android MCP bridge TODOs: DPF status, DPF regen, AdBlue, full diagnostics, DTC reading~~ — DONE 2026-05-12
+- [x] ~~**[BUILD]** C++ audio worker stubs: whisper STT, piper TTS integration, model loading~~ — DONE 2026-05-12
 
 ## MEDIUM
 
-- [ ] **[BUILD]** C++ voice FSM command execution callback not wired (`voice_control_fsm.cpp:54`) — source: TODO scan
+- [x] ~~**[BUILD]** C++ voice FSM command execution callback not wired (`voice_control_fsm.cpp:54`)~~ — DONE 2026-05-12
 - [ ] **[TEST]** Android instrumented test `DrivingServiceInstrumentedTest.kt` needs IdlingResource + assertions — source: TODO scan
 - [x] ~~**[REFACTOR]** `hardware_manager.py` — add explicit fallback/simulation logging when sub-components fail to initialize~~ — DONE 2026-05-12
 - [x] ~~**[DOC]** Schema generator `generate.py` lacks `--dry-run` flag for drift detection~~ — DONE 2026-05-12
