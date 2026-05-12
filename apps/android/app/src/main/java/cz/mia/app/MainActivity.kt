@@ -167,7 +167,7 @@ class MainActivity : ComponentActivity() {
 			Spacer(Modifier.height(16.dp))
 
 			// Citroën C4 specific controls
-			CitroenControls(latest)
+			CitroenControls(latest, vm)
 
 			Spacer(Modifier.height(16.dp))
 
@@ -326,7 +326,7 @@ private fun PolicyAdvisory(message: String?, mode: String, battery: Int) {
 
 
 @Composable
-private fun CitroenControls(latest: TelemetryEntity?) {
+private fun CitroenControls(latest: TelemetryEntity?, vm: DashboardViewModel) {
 	Column(modifier = Modifier.fillMaxWidth()) {
 		Text("Citroën C4 Controls", style = MaterialTheme.typography.titleMedium)
 
@@ -342,10 +342,7 @@ private fun CitroenControls(latest: TelemetryEntity?) {
 				horizontalArrangement = Arrangement.spacedBy(8.dp)
 			) {
 				OutlinedButton(
-					onClick = {
-						// TODO: Implement DPF status check via MCP bridge
-						// This would send command to automotive-mcp-bridge
-					},
+					onClick = { vm.checkDpfStatus() },
 					modifier = Modifier.weight(1f)
 				) {
 					Icon(Icons.Default.Info, contentDescription = null)
@@ -354,10 +351,7 @@ private fun CitroenControls(latest: TelemetryEntity?) {
 				}
 
 				Button(
-					onClick = {
-						// TODO: Implement DPF regeneration via MCP bridge
-						// This would send regeneration command to citroen-c4-bridge
-					},
+					onClick = { vm.requestDpfRegeneration() },
 					modifier = Modifier.weight(1f),
 					enabled = latest.dpfStatus == "ok" || latest.dpfStatus == "warning",
 					colors = ButtonDefaults.buttonColors(
@@ -379,9 +373,7 @@ private fun CitroenControls(latest: TelemetryEntity?) {
 			Spacer(Modifier.height(4.dp))
 
 			OutlinedButton(
-				onClick = {
-					// TODO: Implement AdBlue status check via MCP bridge
-				},
+				onClick = { vm.checkAdBlueLevel() },
 				modifier = Modifier.fillMaxWidth()
 			) {
 				Icon(Icons.Default.LocalGasStation, contentDescription = null)
@@ -401,10 +393,7 @@ private fun CitroenControls(latest: TelemetryEntity?) {
 			horizontalArrangement = Arrangement.spacedBy(8.dp)
 		) {
 			OutlinedButton(
-				onClick = {
-					// TODO: Implement full diagnostics via MCP bridge
-					// This would run comprehensive vehicle health check
-				},
+				onClick = { vm.runFullDiagnostics() },
 				modifier = Modifier.weight(1f)
 			) {
 				Icon(Icons.Default.Build, contentDescription = null)
@@ -413,9 +402,7 @@ private fun CitroenControls(latest: TelemetryEntity?) {
 			}
 
 			OutlinedButton(
-				onClick = {
-					// TODO: Implement DTC code reading via MCP bridge
-				},
+				onClick = { vm.readDtcCodes() },
 				modifier = Modifier.weight(1f)
 			) {
 				Icon(Icons.Default.Warning, contentDescription = null)
