@@ -16,14 +16,12 @@ extern "C" {
 
     inline piper_speaker_t* piper_load_speaker(const char* voice_path) { return nullptr; }
     inline void piper_free_speaker(piper_speaker_t* speaker) {}
-    inline int piper_synthesize(piper_speaker_t* speaker, const char* text, int16_t** out_samples, int* out_len) { return -1; }
 }
 
 struct TTSWorker::PiperContext {
     piper_speaker_t* speaker = nullptr;
-    std::string voice_path_;
 
-    PiperContext(const std::string& voice_path) : voice_path_(voice_path) {
+    PiperContext(const std::string& voice_path) {
         speaker = piper_load_speaker(voice_path.c_str());
     }
 
@@ -34,42 +32,6 @@ struct TTSWorker::PiperContext {
     }
 
     bool is_valid() const { return speaker != nullptr; }
-
-    // Native synthesis via piper API — writes WAV and returns path
-    std::string synthesize(const std::string& text) {
-        if (!speaker) return "";
-
-        int16_t* samples = nullptr;
-        int sample_count = 0;
-        int ret = piper_synthesize(speaker, text.c_str(), &samples, &sample_count);
-        if (ret != 0 || !samples || sample_count <= 0) return "";
-
-        // Write to temporary WAV file
-        std::string out_path = "/tmp/mia_tts_" + std::to_string(std::hash<std::string>{}(text)) + ".wav";
-        std::ofstream wav(out_path, std::ios::binary);
-        if (!wav) return "";
-
-        // Simple WAV header (16-bit mono 22050 Hz)
-        const int sample_rate = 22050;
-        const int data_size = sample_count * 2;
-        const int file_size = 36 + data_size;
-        wav.write("RIFF", 4);
-        wav.write(reinterpret_cast<const char*>(&file_size), 4);
-        wav.write("WAVEfmt ", 8);
-        int chunk_size = 16; wav.write(reinterpret_cast<const char*>(&chunk_size), 4);
-        int16_t audio_fmt = 1; wav.write(reinterpret_cast<const char*>(&audio_fmt), 2);
-        int16_t channels = 1; wav.write(reinterpret_cast<const char*>(&channels), 2);
-        wav.write(reinterpret_cast<const char*>(&sample_rate), 4);
-        int byte_rate = sample_rate * 2; wav.write(reinterpret_cast<const char*>(&byte_rate), 4);
-        int16_t block_align = 2; wav.write(reinterpret_cast<const char*>(&block_align), 2);
-        int16_t bits = 16; wav.write(reinterpret_cast<const char*>(&bits), 2);
-        wav.write("data", 4);
-        wav.write(reinterpret_cast<const char*>(&data_size), 4);
-        wav.write(reinterpret_cast<const char*>(samples), data_size);
-        wav.close();
-
-        return out_path;
-    }
 };
 
 TTSWorker::TTSWorker() {
@@ -138,19 +100,9 @@ void TTSWorker::worker_thread_func() {
 }
 
 bool TTSWorker::process_tts(const TTSTRequest& request) {
-    // Try native piper integration first
-    if (piper_ctx_ && piper_ctx_->is_valid()) {
-        std::string audio_path = piper_ctx_->synthesize(request.text);
-        if (!audio_path.empty()) {
-            if (request.on_result) {
-                request.on_result(audio_path);
-            }
-            return true;
-        }
-        // Native failed, fall through to CLI
-    }
+    // Use piper CLI as primary method for now
+    // TODO: Implement native piper integration
 
-    // Fall back to piper CLI
     std::string audio_path = run_piper_cli(request.text);
     if (!audio_path.empty()) {
         // Read the generated audio file
@@ -177,18 +129,13 @@ bool TTSWorker::process_tts(const TTSTRequest& request) {
 
 bool TTSWorker::load_model(const std::string& model_path, const std::string& voice_path) {
     try {
-        // Attempt to load the piper voice model for native synthesis
+        // For now, just check if paths exist
+        // TODO: Implement actual piper model loading
         if (!voice_path.empty() && std::filesystem::exists(voice_path)) {
             piper_ctx_ = std::make_unique<PiperContext>(voice_path);
-            if (piper_ctx_->is_valid()) {
-                std::cout << "Piper model loaded natively: " << voice_path << std::endl;
-                return true;
-            }
-            // Native load failed — clear context, allow CLI fallback
-            std::cerr << "Piper native load failed, will use CLI fallback" << std::endl;
-            piper_ctx_.reset();
+            return piper_ctx_->is_valid();
         }
-        return true; // Allow CLI fallback even without native model
+        return true; // Allow CLI fallback
     } catch (const std::exception& e) {
         std::cerr << "Failed to load piper model: " << e.what() << std::endl;
         return false;

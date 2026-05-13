@@ -9,7 +9,6 @@ struct VoiceControlContext {
     // Callbacks to worker threads
     std::function<void(const std::string&)> on_audio_ready;
     std::function<void(const std::string&)> on_intent_recognized;
-    std::function<void(const std::string&, const std::string&)> on_command_execute;
     std::function<void(const std::string&)> on_response_ready;
     std::function<void()> on_playback_finished;
 
