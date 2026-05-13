@@ -1,6 +1,6 @@
 # MIA Dev Pipeline Backlog
 
-> Last refreshed: 2026-05-11 — Phase 1 Task Creator scan
+> Last refreshed: 2026-05-13 — Reconsidered approach, reverted dead code
 
 ## URGENT
 
@@ -11,12 +11,12 @@
 
 - [x] ~~**[TEST]** `arduino.py` needs simulation fallback for CI~~ — DONE 2026-05-12
 - [x] ~~**[TEST]** `gpio.py` (messaging client variant) needs graceful degradation when hardware server is unavailable~~ — DONE 2026-05-12
-- [x] ~~**[BUILD]** Android MCP bridge TODOs: DPF status, DPF regen, AdBlue, full diagnostics, DTC reading~~ — DONE 2026-05-12
-- [x] ~~**[BUILD]** C++ audio worker stubs: whisper STT, piper TTS integration, model loading~~ — DONE 2026-05-12
+- [x] ~~**[BUILD]** Android MCP bridge TODOs: DPF status, DPF regen, AdBlue, full diagnostics, DTC reading~~ — DONE 2026-05-12 (commands aligned to backend intents)
+- [ ] **[BUILD]** C++ audio: native whisper/piper library integration — source: TODO scan (requires actual library linking, not stubs)
+- [ ] **[BUILD]** C++ voice FSM `on_command_execute` callback — source: TODO scan (blocked: needs context struct change + consumer)
 
 ## MEDIUM
 
-- [x] ~~**[BUILD]** C++ voice FSM command execution callback not wired (`voice_control_fsm.cpp:54`)~~ — DONE 2026-05-12
 - [ ] **[TEST]** Android instrumented test `DrivingServiceInstrumentedTest.kt` needs IdlingResource + assertions — source: TODO scan
 - [x] ~~**[REFACTOR]** `hardware_manager.py` — add explicit fallback/simulation logging when sub-components fail to initialize~~ — DONE 2026-05-12
 - [x] ~~**[DOC]** Schema generator `generate.py` lacks `--dry-run` flag for drift detection~~ — DONE 2026-05-12
