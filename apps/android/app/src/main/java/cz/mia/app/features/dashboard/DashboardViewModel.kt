@@ -28,34 +28,34 @@ class DashboardViewModel @Inject constructor(
 	val commandResult: StateFlow<CommandResult?> = _commandResult.asStateFlow()
 
 	fun checkDpfStatus() {
-		sendAutomotiveCommand("dpf_status", mapOf("action" to "read"))
+		sendAutomotiveCommand("dpf_status")
 	}
 
 	fun requestDpfRegeneration() {
-		sendAutomotiveCommand("dpf_regen", mapOf("action" to "start"))
+		sendAutomotiveCommand("regenerate_dpf")
 	}
 
 	fun checkAdBlueLevel() {
-		sendAutomotiveCommand("adblue_status", mapOf("action" to "read"))
+		sendAutomotiveCommand("check_additive")
 	}
 
 	fun runFullDiagnostics() {
-		sendAutomotiveCommand("full_diagnostics", mapOf("action" to "scan"))
+		sendAutomotiveCommand("diagnostics")
 	}
 
 	fun readDtcCodes() {
-		sendAutomotiveCommand("dtc_read", mapOf("action" to "read", "mode" to "03"))
+		sendAutomotiveCommand("diagnostics")
 	}
 
 	fun clearCommandResult() {
 		_commandResult.value = null
 	}
 
-	private fun sendAutomotiveCommand(action: String, params: Map<String, Any>) {
+	private fun sendAutomotiveCommand(action: String, params: Map<String, Any>? = null) {
 		viewModelScope.launch {
 			_commandResult.value = CommandResult(action, isLoading = true)
 			val result = deviceRepository.sendCommand(
-				deviceId = "citroen-c4-bridge",
+				deviceId = "automotive",
 				action = action,
 				params = params
 			)
